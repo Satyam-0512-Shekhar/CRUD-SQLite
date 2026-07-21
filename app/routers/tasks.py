@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import Task
+from app.models import Task, TaskCreate
 
 router = APIRouter(
     prefix="/tasks",
@@ -26,3 +26,23 @@ def get_task(task_id: int, session: Session = Depends(get_session)):
         )
 
     return task
+
+
+@router.post("/", response_model=Task, status_code=status.HTTP_201_CREATED)
+def create_task(task: TaskCreate, session: Session = Depends(get_session)):
+    if not task.title.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Title cannot be empty"
+        )
+
+    db_task = Task(
+        title=task.title,
+        done=False
+    )
+
+    session.add(db_task)
+    session.commit()
+    session.refresh(db_task)
+
+    return db_task
