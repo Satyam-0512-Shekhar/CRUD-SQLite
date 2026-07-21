@@ -12,3 +12,8 @@ class Task(SQLModel, table=True):
 
 class TaskCreate(SQLModel):
     title: str
+
+
+class TaskUpdate(SQLModel):
+    title: str
+    done: bool
